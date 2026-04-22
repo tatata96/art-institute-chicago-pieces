@@ -1,13 +1,12 @@
 const GROUPS = [
   { label: 'Scatter', field: null },
-  { label: 'Artist', field: 'artist_display' },
-  { label: 'Medium', field: 'medium_display' },
-  { label: 'Date', field: 'date_display' },
-  { label: 'Department', field: 'department_title' },
-  { label: 'Origin', field: 'place_of_origin' },
-  { label: 'Type', field: 'artwork_type_title' },
-  { label: 'Style', field: 'style_title' },
-  { label: 'Classification', field: 'classification_title' },
+  { label: 'Movement', field: 'movement_primary' },
+  { label: 'Subject', field: 'subject_primary' },
+  { label: 'Century', field: 'century' },
+  { label: 'Country', field: 'country' },
+  { label: 'Palette', field: 'palette_primary' },
+  { label: 'Medium', field: 'medium_category' },
+  { label: 'Size', field: 'size_bucket' },
 ]
 
 export default function TopBar({ activeGroup, onGroupChange }) {
