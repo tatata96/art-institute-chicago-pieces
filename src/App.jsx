@@ -129,7 +129,10 @@ export default function App() {
           cameraRef={core.cameraRef}
           groupCentersRef={core.groupCentersRef}
           onSelect={(key) => core.navigateToGroup(key)}
-          outerStyle={{bottom: selectedItem ? 92 : 24}}
+          outerStyle={{
+            bottom: selectedItem ? 92 : 24,
+            left: "clamp(152px, 13vw, 190px)",
+          }}
         />
       )}
       <BottomBar item={selectedItem} />

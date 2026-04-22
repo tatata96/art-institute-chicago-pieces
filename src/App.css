@@ -1,5 +1,87 @@
 .app {
   min-height: 100vh;
+  background: #f8f8f6;
+  color: #191919;
+}
+
+.top-bar {
+  position: fixed;
+  top: 18px;
+  bottom: 18px;
+  left: 18px;
+  z-index: 20;
+  display: flex;
+  width: clamp(116px, 9.5vw, 150px);
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.top-bar-title {
+  display: block;
+  padding: 0 3px;
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.top-bar-pills {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 4px;
+  padding: 5px;
+  overflow-y: auto;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+  pointer-events: all;
+  scrollbar-width: none;
+}
+
+.top-bar-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.pill {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  border: 0;
+  border-left: 3px solid transparent;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.46);
+  color: #505050;
+  cursor: pointer;
+  font: 600 13px/1 system-ui, sans-serif;
+  letter-spacing: 0;
+  padding: 10px 11px 10px 9px;
+  text-align: left;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.pill:hover {
+  background: rgba(255, 255, 255, 0.76);
+  color: #222;
+  transform: translateX(2px);
+}
+
+.pill--active {
+  border-left-color: #222;
+  background: #222;
+  color: #fff;
+}
+
+.pill--active:hover {
+  background: #222;
+  color: #fff;
 }
 
 .status-overlay {
@@ -15,4 +97,28 @@
 
 .status-overlay--error {
   color: #9f1d1d;
+}
+
+@media (max-width: 700px) {
+  .top-bar {
+    top: 12px;
+    bottom: auto;
+    left: 12px;
+    width: min(128px, 38vw);
+    max-height: calc(100vh - 24px);
+  }
+
+  .top-bar-title {
+    font-size: 15px;
+  }
+
+  .top-bar-pills {
+    max-height: calc(100vh - 58px);
+  }
+
+  .pill {
+    min-height: 34px;
+    padding: 9px 9px 9px 7px;
+    font-size: 12px;
+  }
 }
