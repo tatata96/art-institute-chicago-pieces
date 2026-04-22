@@ -99,6 +99,62 @@
   color: #9f1d1d;
 }
 
+.artwork-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: clamp(18px, 4vw, 48px);
+  background: rgba(18, 18, 18, 0.76);
+}
+
+.artwork-modal {
+  display: grid;
+  width: min(920px, 92vw);
+  max-width: min(920px, 92vw);
+  max-height: 92vh;
+  grid-template-rows: minmax(0, min(72vh, 760px)) auto;
+  gap: 14px;
+  margin: 0;
+}
+
+.artwork-modal-image-frame {
+  display: grid;
+  width: 100%;
+  height: min(72vh, 760px);
+  place-items: center;
+  overflow: hidden;
+  background: #eee;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+}
+
+.artwork-modal-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.artwork-modal-label {
+  display: grid;
+  gap: 5px;
+  padding: 13px 15px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #191919;
+  font: 500 13px/1.35 system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+.artwork-modal-label strong {
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.artwork-modal-label span {
+  color: #555;
+}
+
 @media (max-width: 700px) {
   .top-bar {
     top: 12px;
@@ -120,5 +176,24 @@
     min-height: 34px;
     padding: 9px 9px 9px 7px;
     font-size: 12px;
+  }
+
+  .artwork-modal-backdrop {
+    padding: 14px;
+  }
+
+  .artwork-modal {
+    width: 100%;
+    max-width: 100%;
+    grid-template-rows: minmax(0, 68vh) auto;
+    gap: 10px;
+  }
+
+  .artwork-modal-image-frame {
+    height: 68vh;
+  }
+
+  .artwork-modal-label {
+    padding: 11px 12px;
   }
 }

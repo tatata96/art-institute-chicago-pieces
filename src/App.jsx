@@ -44,6 +44,53 @@ function renderItem(ctx, item, selected) {
   }
 }
 
+function getArtworkMeta(artwork) {
+  const year =
+    artwork.year_start && artwork.year_end && artwork.year_start !== artwork.year_end
+      ? `${artwork.year_start}-${artwork.year_end}`
+      : artwork.year_start;
+
+  return [artwork.artist, artwork.medium_category, year]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+function getLargeImageUrl(artwork) {
+  return artwork.image_url?.replace("/full/400,", "/full/1200,") ?? "";
+}
+
+function ArtworkModal({item, onClose}) {
+  if (!item) return null;
+
+  const artwork = item.data ?? item;
+  const meta = getArtworkMeta(artwork);
+
+  return (
+    <div className="artwork-modal-backdrop" onClick={onClose}>
+      <figure
+        className="artwork-modal"
+        aria-label={artwork.title}
+        role="dialog"
+        aria-modal="true"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="artwork-modal-image-frame">
+          <img
+            className="artwork-modal-image"
+            src={getLargeImageUrl(artwork)}
+            alt={artwork.title}
+          />
+        </div>
+        <figcaption className="artwork-modal-label">
+          <strong>{artwork.title}</strong>
+          {meta && <span>{meta}</span>}
+          {artwork.insight && <span>{artwork.insight}</span>}
+        </figcaption>
+      </figure>
+    </div>
+  );
+}
+
 export default function App() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeGroup, setActiveGroup] = useState("movement_primary");
@@ -105,6 +152,19 @@ export default function App() {
     setActiveGroup(field);
   }
 
+  useEffect(() => {
+    if (!selectedItem) return undefined;
+
+    function handleKeyDown(event) {
+      if (event.key === "Escape") {
+        setSelectedItem(null);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedItem]);
+
   return (
     <div className="app">
       <TopBar activeGroup={activeGroup} onGroupChange={handleGroupChange} />
@@ -136,6 +196,7 @@ export default function App() {
         />
       )}
       <BottomBar item={selectedItem} />
+      <ArtworkModal item={selectedItem} onClose={() => setSelectedItem(null)} />
     </div>
   );
 }
