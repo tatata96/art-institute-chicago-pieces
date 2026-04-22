@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {
   CategoryNav,
   useUniverseCore,
@@ -6,20 +6,18 @@ import {
   createItems,
   loadImage,
 } from "gallery-universe";
-import artworksData from "./api/artworks-normalized.json";
+import {fetchRandomArtworks} from "./api/artworks";
 import TopBar from "./components/TopBar";
 import BottomBar from "./components/BottomBar";
 import "./App.css";
-
-const ITEMS = createItems(artworksData.length, (i) => artworksData[i]);
 
 function getGroupValue(item, field) {
   return item.data?.[field] ?? "Unknown";
 }
 
-function getGroups(field) {
+function getGroups(items, field) {
   const counts = new Map();
-  for (const item of ITEMS) {
+  for (const item of items) {
     const key = getGroupValue(item, field);
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
@@ -49,10 +47,44 @@ function renderItem(ctx, item, selected) {
 export default function App() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeGroup, setActiveGroup] = useState("movement_primary");
+  const [artworks, setArtworks] = useState([]);
+  const [loadState, setLoadState] = useState({status: "loading", message: ""});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchRandomArtworks({limit: 800})
+      .then((items) => {
+        if (cancelled) return;
+        setArtworks(items);
+        setLoadState({status: "ready", message: ""});
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setLoadState({
+          status: "error",
+          message: error instanceof Error ? error.message : "Failed to load artworks",
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const items = useMemo(
+    () => createItems(artworks.length, (i) => artworks[i]),
+    [artworks],
+  );
 
   const core = useUniverseCore({
-    items: ITEMS,
+    items,
     onItemClick: (item) => setSelectedItem(item),
+  });
+  const coreRef = useRef(core);
+
+  useEffect(() => {
+    coreRef.current = core;
   });
 
   const groupBy = useMemo(
@@ -61,13 +93,13 @@ export default function App() {
     [activeGroup],
   );
   const groups = useMemo(
-    () => (activeGroup ? getGroups(activeGroup) : []),
-    [activeGroup],
+    () => (activeGroup ? getGroups(items, activeGroup) : []),
+    [activeGroup, items],
   );
 
   useEffect(() => {
-    core.setGroupBy(groupBy);
-  }, [core, groupBy]);
+    coreRef.current.setGroupBy(groupBy);
+  }, [groupBy, items]);
 
   function handleGroupChange(field) {
     setActiveGroup(field);
@@ -83,6 +115,14 @@ export default function App() {
         renderItem={renderItem}
         groupBy={groupBy}
       />
+      {loadState.status === "loading" && (
+        <div className="status-overlay">Loading Art Institute artworks...</div>
+      )}
+      {loadState.status === "error" && (
+        <div className="status-overlay status-overlay--error">
+          {loadState.message}
+        </div>
+      )}
       {activeGroup && (
         <CategoryNav
           groups={groups}

@@ -1,3 +1,18 @@
 .app {
   min-height: 100vh;
 }
+
+.status-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: #222;
+  font: 600 15px/1.4 system-ui, sans-serif;
+  pointer-events: none;
+}
+
+.status-overlay--error {
+  color: #9f1d1d;
+}
