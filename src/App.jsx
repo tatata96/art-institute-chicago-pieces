@@ -9,75 +9,11 @@ import {
 import {fetchRandomArtworks} from "./api/artworks";
 import TopBar from "./components/TopBar";
 import BottomBar from "./components/BottomBar";
+import ArtworkModal from "./components/ArtworkModal";
+import {getGroups, getGroupValue} from "./utils";
 import "./App.css";
 
-function getGroupValue(item, field) {
-  return item.data?.[field] ?? "Unknown";
-}
-
-function getGroups(items, field) {
-  const counts = new Map();
-  for (const item of items) {
-    const key = getGroupValue(item, field);
-    counts.set(key, (counts.get(key) ?? 0) + 1);
-  }
-
-  return [...counts.entries()]
-    .map(([key, count]) => ({key, count}))
-    .sort((a, b) => a.key.localeCompare(b.key));
-}
-
 const renderItem = createImageRenderer("image_url");
-
-
-function getArtworkMeta(artwork) {
-  const year =
-    artwork.year_start &&
-    artwork.year_end &&
-    artwork.year_start !== artwork.year_end
-      ? `${artwork.year_start}-${artwork.year_end}`
-      : artwork.year_start;
-
-  return [artwork.artist, artwork.medium_category, year]
-    .filter(Boolean)
-    .join(" · ");
-}
-
-function getLargeImageUrl(artwork) {
-  return artwork.image_url?.replace("/full/400,", "/full/1200,") ?? "";
-}
-
-function ArtworkModal({item, onClose}) {
-  if (!item) return null;
-
-  const artwork = item.data ?? item;
-  const meta = getArtworkMeta(artwork);
-
-  return (
-    <div className="artwork-modal-backdrop" onClick={onClose}>
-      <figure
-        className="artwork-modal"
-        aria-label={artwork.title}
-        role="dialog"
-        aria-modal="true"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="artwork-modal-image-frame">
-          <img
-            className="artwork-modal-image"
-            src={getLargeImageUrl(artwork)}
-            alt={artwork.title}
-          />
-        </div>
-        <figcaption className="artwork-modal-label">
-          <strong>{artwork.title}</strong>
-          {meta && <span>{meta}</span>}
-          {artwork.insight && <span>{artwork.insight}</span>}
-        </figcaption>
-      </figure>
-    </div>
-  );
-}
 
 export default function App() {
   const [selectedItem, setSelectedItem] = useState(null);

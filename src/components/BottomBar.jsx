@@ -1,14 +1,10 @@
+import {getArtworkMeta} from "../utils";
+
 export default function BottomBar({ item }) {
   if (!item) return null
 
   const artwork = item.data ?? item
-  const year =
-    artwork.year_start && artwork.year_end && artwork.year_start !== artwork.year_end
-      ? `${artwork.year_start}-${artwork.year_end}`
-      : artwork.year_start
-  const meta = [artwork.artist, artwork.medium_category, year]
-    .filter(Boolean)
-    .join(' · ')
+  const meta = getArtworkMeta(artwork)
 
   return (
     <div className="bottom-bar">
