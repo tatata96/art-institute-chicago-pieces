@@ -1,16 +1,48 @@
-# React + Vite
+# Art Piece Space
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive React/Vite gallery that places public-domain artworks from the Art Institute of Chicago into an explorable visual space. Artworks can be scattered or grouped by movement, subject, century, country, or medium, then opened for a larger artwork view.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19
+- Vite 8
+- `gallery-universe`
+- GSAP
+- Vitest
+- ESLint
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Install dependencies:
 
-## Expanding the ESLint configuration
+```sh
+npm install
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Start the local development server:
+
+```sh
+npm run dev
+```
+
+Build for production:
+
+```sh
+npm run build
+```
+
+## Data Source
+
+Artwork records are loaded from the Art Institute of Chicago public API:
+
+```text
+https://api.artic.edu/api/v1/artworks
+```
+
+Images are rendered through the Art Institute IIIF image service:
+
+```text
+https://www.artic.edu/iiif/2
+```
+
+Only public-domain artworks with image IDs are included in the gallery.
