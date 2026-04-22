@@ -2,6 +2,8 @@
 
 An interactive React/Vite gallery that places public-domain artworks from the Art Institute of Chicago into an explorable visual space. Artworks can be scattered or grouped by movement, subject, century, country, or medium, then opened for a larger artwork view.
 
+https://art-institute-chicago-pieces.vercel.app/
+
 ## Tech Stack
 
 - React 19
