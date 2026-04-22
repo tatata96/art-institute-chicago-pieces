@@ -4,7 +4,7 @@ import {
   useUniverseCore,
   UniverseCanvas,
   createItems,
-  loadImage,
+  createImageRenderer,
 } from "gallery-universe";
 import {fetchRandomArtworks} from "./api/artworks";
 import TopBar from "./components/TopBar";
@@ -27,22 +27,8 @@ function getGroups(items, field) {
     .sort((a, b) => a.key.localeCompare(b.key));
 }
 
-function renderItem(ctx, item, selected) {
-  const {screenX: x, screenY: y, screenSize: s} = item;
-  const r = s / 2;
-  const img = loadImage(item.data.image_url);
-  if (img.complete && img.naturalWidth > 0) {
-    ctx.drawImage(img, x - r, y - r, s, s);
-  } else {
-    ctx.fillStyle = "#ccc";
-    ctx.fillRect(x - r, y - r, s, s);
-  }
-  if (selected) {
-    ctx.strokeStyle = "#ff0";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(x - r - 2, y - r - 2, s + 4, s + 4);
-  }
-}
+const renderItem = createImageRenderer("image_url");
+
 
 function getArtworkMeta(artwork) {
   const year =
