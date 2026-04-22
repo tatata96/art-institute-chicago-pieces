@@ -10,6 +10,7 @@ const GROUPS = [
 export default function TopBar({activeGroup, onGroupChange}) {
   return (
     <aside className="top-bar" aria-label="Category filters">
+      <strong className="top-bar-title">Art Institute of Chicago</strong>
       <div className="top-bar-pills">
         {GROUPS.map(({label, field}) => (
           <button

@@ -46,7 +46,9 @@ function renderItem(ctx, item, selected) {
 
 function getArtworkMeta(artwork) {
   const year =
-    artwork.year_start && artwork.year_end && artwork.year_start !== artwork.year_end
+    artwork.year_start &&
+    artwork.year_end &&
+    artwork.year_start !== artwork.year_end
       ? `${artwork.year_start}-${artwork.year_end}`
       : artwork.year_start;
 
@@ -110,7 +112,8 @@ export default function App() {
         if (cancelled) return;
         setLoadState({
           status: "error",
-          message: error instanceof Error ? error.message : "Failed to load artworks",
+          message:
+            error instanceof Error ? error.message : "Failed to load artworks",
         });
       });
 
@@ -135,8 +138,7 @@ export default function App() {
   });
 
   const groupBy = useMemo(
-    () =>
-      activeGroup ? (item) => getGroupValue(item, activeGroup) : null,
+    () => (activeGroup ? (item) => getGroupValue(item, activeGroup) : null),
     [activeGroup],
   );
   const groups = useMemo(
@@ -168,6 +170,7 @@ export default function App() {
   return (
     <div className="app">
       <TopBar activeGroup={activeGroup} onGroupChange={handleGroupChange} />
+
       <UniverseCanvas
         core={core}
         width={window.innerWidth}
@@ -176,7 +179,21 @@ export default function App() {
         groupBy={groupBy}
       />
       {loadState.status === "loading" && (
-        <div className="status-overlay">Loading Art Institute artworks...</div>
+        <div
+          className="status-overlay status-overlay--loading"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="loader-panel">
+            <strong>
+              Art pieces loading from the Art Institute of Chicago...
+            </strong>
+            <span className="loader-copy">
+              Gathering the collection into space.
+            </span>
+            <span className="loader-line" aria-hidden="true" />
+          </div>
+        </div>
       )}
       {loadState.status === "error" && (
         <div className="status-overlay status-overlay--error">

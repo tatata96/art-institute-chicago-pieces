@@ -18,19 +18,25 @@
 }
 
 .top-bar-title {
+  position: fixed;
+  top: 18px;
+  right: 18px;
   display: block;
-  padding: 0 3px;
-  font-size: 18px;
+  max-width: min(280px, calc(100vw - 190px));
+  color: #191919;
+  font-size: 16px;
   font-weight: 650;
   line-height: 1.05;
   letter-spacing: 0;
+  pointer-events: none;
+  text-align: right;
 }
 
 .top-bar-pills {
   display: flex;
   width: 100%;
   flex-direction: column;
-  gap: 4px;
+  gap: 12px;
   padding: 5px;
   overflow-y: auto;
   border: 1px solid rgba(0, 0, 0, 0.08);
@@ -56,7 +62,9 @@
   background: rgba(255, 255, 255, 0.46);
   color: #505050;
   cursor: pointer;
-  font: 600 13px/1 system-ui, sans-serif;
+  font:
+    600 13px/1 system-ui,
+    sans-serif;
   letter-spacing: 0;
   padding: 10px 11px 10px 9px;
   text-align: left;
@@ -87,12 +95,80 @@
 .status-overlay {
   position: fixed;
   inset: 0;
+  z-index: 100;
   display: grid;
   place-items: center;
   padding: 24px;
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(255, 255, 255, 0.92),
+      rgba(248, 248, 246, 0.98) 52%
+    ),
+    #f8f8f6;
   color: #222;
-  font: 600 15px/1.4 system-ui, sans-serif;
-  pointer-events: none;
+  font:
+    600 15px/1.4 system-ui,
+    sans-serif;
+  pointer-events: all;
+}
+
+.loader-panel {
+  display: grid;
+  width: min(430px, 100%);
+  gap: 10px;
+  justify-items: center;
+  text-align: center;
+}
+
+.loader-kicker,
+.loader-copy {
+  color: #666;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.loader-panel strong {
+  color: #191919;
+  font-size: clamp(24px, 4vw, 42px);
+  font-weight: 720;
+  line-height: 1.04;
+  letter-spacing: 0;
+}
+
+.loader-copy {
+  font-weight: 500;
+}
+
+.loader-line {
+  position: relative;
+  width: min(280px, 72vw);
+  height: 3px;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.loader-line::after {
+  position: absolute;
+  inset: 0;
+  width: 42%;
+  border-radius: inherit;
+  background: #222;
+  content: "";
+  animation: loader-line 1.05s ease-in-out infinite;
+}
+
+@keyframes loader-line {
+  0% {
+    transform: translateX(-110%);
+  }
+
+  100% {
+    transform: translateX(245%);
+  }
 }
 
 .status-overlay--error {
@@ -142,7 +218,9 @@
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.94);
   color: #191919;
-  font: 500 13px/1.35 system-ui, sans-serif;
+  font:
+    500 13px/1.35 system-ui,
+    sans-serif;
   letter-spacing: 0;
 }
 
@@ -165,7 +243,10 @@
   }
 
   .top-bar-title {
-    font-size: 15px;
+    top: 12px;
+    right: 12px;
+    max-width: calc(100vw - 168px);
+    font-size: 14px;
   }
 
   .top-bar-pills {
