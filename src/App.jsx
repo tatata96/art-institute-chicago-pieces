@@ -99,7 +99,9 @@ export default function App() {
         height={window.innerHeight}
         renderItem={renderItem}
         groupBy={groupBy}
+        clusterLabelPosition={"center"}
       />
+
       {loadState.status === "loading" && (
         <div
           className="status-overlay status-overlay--loading"
@@ -117,11 +119,13 @@ export default function App() {
           </div>
         </div>
       )}
+
       {loadState.status === "error" && (
         <div className="status-overlay status-overlay--error">
           {loadState.message}
         </div>
       )}
+
       {activeGroup && (
         <CategoryNav
           groups={groups}
@@ -135,6 +139,7 @@ export default function App() {
         />
       )}
       <BottomBar item={selectedItem} />
+
       <ArtworkModal item={selectedItem} onClose={() => setSelectedItem(null)} />
     </div>
   );
