@@ -17,7 +17,7 @@ const renderItem = createImageRenderer("image_url");
 
 export default function App() {
   const [selectedItem, setSelectedItem] = useState(null);
-  const [activeGroup, setActiveGroup] = useState("movement_primary");
+  const [activeGroup, setActiveGroup] = useState(null);
   const [artworks, setArtworks] = useState([]);
   const [loadState, setLoadState] = useState({status: "loading", message: ""});
 
