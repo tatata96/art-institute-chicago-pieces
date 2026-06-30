@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { buildImageUrl, fetchArtworks } from './artworks'
 
 describe('buildImageUrl', () => {
-  it('returns a small IIIF image URL', () => {
-    expect(buildImageUrl('abc123')).toBe(
-      'https://www.artic.edu/iiif/2/abc123/full/400,/0/default.jpg',
+  it('returns the provided image URL', () => {
+    expect(buildImageUrl('https://openaccess-cdn.clevelandart.org/example.jpg')).toBe(
+      'https://openaccess-cdn.clevelandart.org/example.jpg',
     )
   })
 })
@@ -14,68 +14,81 @@ describe('fetchArtworks', () => {
     vi.stubGlobal('fetch', vi.fn())
   })
 
-  function mockArtwork(id, imageId = `img-${id}`) {
+  function mockArtwork(id, overrides = {}) {
     return {
       id,
       title: `Painting ${id}`,
-      artist_display: `Artist ${id}`,
-      date_start: 1889,
-      date_end: 1889,
-      date_display: '1889',
-      medium_display: 'Oil on canvas',
-      image_id: imageId,
-      department_title: 'Painting and Sculpture',
-      place_of_origin: 'France',
-      artwork_type_title: 'Painting',
-      style_title: 'Impressionism',
-      classification_title: 'painting',
+      creation_date_earliest: 1889,
+      creation_date_latest: 1889,
+      creation_date: '1889',
+      technique: 'Oil on canvas',
+      department: 'American Painting and Sculpture',
+      collection: 'American - Painting',
+      type: 'Painting',
+      culture: ['America'],
+      creators: [
+        {
+          role: 'artist',
+          description: `Artist ${id} (American, 1850-1900)`,
+        },
+      ],
+      images: {
+        web: {
+          url: `https://openaccess-cdn.clevelandart.org/${id}/${id}_web.jpg`,
+        },
+        print: {
+          url: `https://openaccess-cdn.clevelandart.org/${id}/${id}_print.jpg`,
+        },
+      },
+      ...overrides,
     }
   }
 
-  it('fetches paginated public-domain artwork pages and normalizes records with images', async () => {
+  it('fetches paginated Cleveland artworks and normalizes records with images', async () => {
     globalThis.fetch
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           data: [
-            mockArtwork(1, 'img-a'),
-            {
-              id: 2,
-              title: 'No image',
-              image_id: null,
-            },
+            mockArtwork(1),
+            mockArtwork(2, {
+              images: {},
+            }),
           ],
         }),
       })
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          data: [mockArtwork(3, 'img-c')],
+          data: [mockArtwork(3)],
         }),
       })
 
     const result = await fetchArtworks({limit: 2, pageLimit: 1})
 
     expect(globalThis.fetch).toHaveBeenCalledTimes(2)
+    expect(globalThis.fetch.mock.calls[0][0]).toContain('/cma-api/api/artworks/')
+    expect(globalThis.fetch.mock.calls[0][0]).toContain('has_image=1')
     expect(globalThis.fetch.mock.calls[0][0]).toContain('limit=1')
-    expect(globalThis.fetch.mock.calls[0][0]).toContain('page=1')
-    expect(globalThis.fetch.mock.calls[1][0]).toContain('page=2')
-    expect(globalThis.fetch.mock.calls[0][0]).toContain('is_public_domain')
+    expect(globalThis.fetch.mock.calls[0][0]).toContain('skip=0')
+    expect(globalThis.fetch.mock.calls[1][0]).toContain('skip=1')
     expect(result).toEqual([
       expect.objectContaining({
         id: 1,
         title: 'Painting 1',
-        artist: 'Artist 1',
+        artist: 'Artist 1 (American, 1850-1900)',
         century: '19th century',
-        movement_primary: 'Impressionism',
+        movement_primary: 'American Painting and Sculpture',
         subject_primary: 'Painting',
-        medium_category: 'painting',
-        country: 'France',
-        image_url: 'https://www.artic.edu/iiif/2/img-a/full/400,/0/default.jpg',
+        medium_category: 'Oil on canvas',
+        country: 'America',
+        image_url: 'https://openaccess-cdn.clevelandart.org/1/1_web.jpg',
+        large_image_url: 'https://openaccess-cdn.clevelandart.org/1/1_print.jpg',
       }),
       expect.objectContaining({
         id: 3,
-        image_url: 'https://www.artic.edu/iiif/2/img-c/full/400,/0/default.jpg',
+        image_url: 'https://openaccess-cdn.clevelandart.org/3/3_web.jpg',
+        large_image_url: 'https://openaccess-cdn.clevelandart.org/3/3_print.jpg',
       }),
     ])
   })
@@ -93,14 +106,12 @@ describe('fetchArtworks', () => {
     expect(result).toHaveLength(800)
     expect(globalThis.fetch).toHaveBeenCalledTimes(8)
     expect(globalThis.fetch.mock.calls[0][0]).toContain('limit=100')
-    expect(globalThis.fetch.mock.calls[7][0]).toContain('page=8')
+    expect(globalThis.fetch.mock.calls[7][0]).toContain('skip=700')
   })
 
   it('throws on non-ok responses', async () => {
-    globalThis.fetch.mockResolvedValueOnce({ ok: false, status: 500 })
+    globalThis.fetch.mockResolvedValueOnce({ok: false, status: 500})
 
-    await expect(fetchArtworks()).rejects.toThrow(
-      'Failed to fetch Art Institute artworks page 1: 500',
-    )
+    await expect(fetchArtworks()).rejects.toThrow('Failed to fetch Cleveland artworks: 500')
   })
 })

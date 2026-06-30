@@ -1,27 +1,11 @@
-const BASE_URL = 'https://api.artic.edu/api/v1/artworks'
-const IIIF_BASE = 'https://www.artic.edu/iiif/2'
+const BASE_URL = '/cma-api/api/artworks/'
 const DEFAULT_LIMIT = 800
 const PAGE_LIMIT = 100
-const FIELDS = [
-  'id',
-  'title',
-  'artist_display',
-  'date_start',
-  'date_end',
-  'date_display',
-  'medium_display',
-  'image_id',
-  'department_title',
-  'place_of_origin',
-  'artwork_type_title',
-  'style_title',
-  'classification_title',
-].join(',')
 
 let artworkRequest
 
-export function buildImageUrl(imageId) {
-  return `${IIIF_BASE}/${imageId}/full/400,/0/default.jpg`
+export function buildImageUrl(imageUrl) {
+  return imageUrl || ''
 }
 
 function getCentury(year) {
@@ -38,31 +22,42 @@ function getCentury(year) {
   return year < 0 ? `${century}${suffix} century BCE` : `${century}${suffix} century`
 }
 
+function getCreator(item) {
+  return item.creators?.find((creator) => creator.role === 'artist') ?? item.creators?.[0]
+}
+
 function normalizeArtwork(item) {
-  if (!item.image_id) return null
+  if (!item.images?.web?.url) return null
+
+  const creator = getCreator(item)
 
   return {
     id: item.id,
     title: item.title || 'Untitled',
-    artist: item.artist_display || 'Unknown artist',
-    year_start: item.date_start,
-    year_end: item.date_end,
-    century: getCentury(item.date_start),
-    movement_primary: item.style_title || item.department_title || 'Unknown',
-    subject_primary: item.artwork_type_title || item.classification_title || 'Unknown',
+    artist: creator?.description || 'Unknown artist',
+    year_start: item.creation_date_earliest,
+    year_end: item.creation_date_latest,
+    century: getCentury(item.creation_date_earliest),
+    movement_primary: item.department || item.collection || 'Unknown',
+    subject_primary: item.type || item.classification || 'Unknown',
     palette_primary: 'Unknown',
-    medium_category: item.classification_title || item.medium_display || 'Unknown',
+    medium_category: item.technique || item.type || 'Unknown',
     size_bucket: 'Unknown',
-    country: item.place_of_origin || 'Unknown',
-    image_url: buildImageUrl(item.image_id),
-    insight: item.date_display || item.medium_display || '',
+    country: item.culture?.[0] || 'Unknown',
+    image_url: buildImageUrl(item.images.web.url),
+    large_image_url: buildImageUrl(item.images.print?.url || item.images.web.url),
+    insight: item.creation_date || item.technique || '',
   }
 }
 
-async function fetchArtworkPage(page, pageLimit) {
-  const url = `${BASE_URL}/search?query[term][is_public_domain]=true&limit=${pageLimit}&page=${page}&fields=${FIELDS}`
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Failed to fetch Art Institute artworks page ${page}: ${res.status}`)
+async function fetchArtworkPage(skip, pageLimit) {
+  const params = new URLSearchParams({
+    has_image: '1',
+    limit: String(pageLimit),
+    skip: String(skip),
+  })
+  const res = await fetch(`${BASE_URL}?${params}`)
+  if (!res.ok) throw new Error(`Failed to fetch Cleveland artworks: ${res.status}`)
 
   const json = await res.json()
   return json.data ?? []
@@ -70,10 +65,9 @@ async function fetchArtworkPage(page, pageLimit) {
 
 export async function fetchArtworks({limit = DEFAULT_LIMIT, pageLimit = PAGE_LIMIT} = {}) {
   const artworks = []
-  const pagesToFetch = Math.ceil(limit / pageLimit)
 
-  for (let page = 1; page <= pagesToFetch && artworks.length < limit; page += 1) {
-    const pageItems = await fetchArtworkPage(page, pageLimit)
+  for (let skip = 0; artworks.length < limit; skip += pageLimit) {
+    const pageItems = await fetchArtworkPage(skip, pageLimit)
     if (pageItems.length === 0) break
 
     artworks.push(...pageItems.map(normalizeArtwork).filter(Boolean))

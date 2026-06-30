@@ -28,5 +28,5 @@ export function getArtworkMeta(artwork) {
 }
 
 export function getLargeImageUrl(artwork) {
-  return artwork.image_url?.replace("/full/400,", "/full/1200,") ?? "";
+  return artwork.large_image_url ?? artwork.image_url ?? "";
 }

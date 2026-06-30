@@ -110,7 +110,7 @@ export default function App() {
         >
           <div className="loader-panel">
             <strong>
-              Art pieces loading from the Art Institute of Chicago...
+              Art pieces loading from the Cleveland Museum of Art...
             </strong>
             <span className="loader-copy">
               Gathering the collection into space.
