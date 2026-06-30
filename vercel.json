@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/cma-api/:path*",
+      "destination": "https://openaccess-api.clevelandart.org/:path*"
+    }
+  ]
+}
