@@ -68,6 +68,8 @@ export default function App() {
   const [artworks, setArtworks] = useState([]);
   const [isHoveringArtwork, setIsHoveringArtwork] = useState(false);
   const [loadState, setLoadState] = useState({status: "loading", message: ""});
+  const pointerRef = useRef(null);
+  const isHoveringArtworkRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -124,32 +126,69 @@ export default function App() {
     setActiveGroup(field);
   }
 
+  const setArtworkHover = useCallback((isHovering) => {
+    if (isHoveringArtworkRef.current === isHovering) return;
+
+    isHoveringArtworkRef.current = isHovering;
+    setIsHoveringArtwork(isHovering);
+  }, []);
+
+  const updateArtworkHover = useCallback(() => {
+    const pointer = pointerRef.current;
+
+    if (!pointer) {
+      setArtworkHover(false);
+      return;
+    }
+
+    const rect = pointer.canvas.getBoundingClientRect();
+    const hoveredArtwork = getHoveredArtwork(
+      items,
+      core.animRef,
+      core.cameraRef.current,
+      rect.width,
+      rect.height,
+      pointer.clientX - rect.left,
+      pointer.clientY - rect.top,
+    );
+
+    setArtworkHover(Boolean(hoveredArtwork));
+  }, [core.animRef, core.cameraRef, items, setArtworkHover]);
+
   const handlePointerMove = useCallback(
     (event) => {
-      if (event.target.tagName !== "CANVAS") {
-        setIsHoveringArtwork(false);
+      if (!(event.target instanceof HTMLCanvasElement)) {
+        pointerRef.current = null;
+        setArtworkHover(false);
         return;
       }
 
-      const rect = event.target.getBoundingClientRect();
-      const hoveredArtwork = getHoveredArtwork(
-        items,
-        core.animRef,
-        core.cameraRef.current,
-        rect.width,
-        rect.height,
-        event.clientX - rect.left,
-        event.clientY - rect.top,
-      );
-
-      setIsHoveringArtwork(Boolean(hoveredArtwork));
+      pointerRef.current = {
+        canvas: event.target,
+        clientX: event.clientX,
+        clientY: event.clientY,
+      };
+      updateArtworkHover();
     },
-    [core.animRef, core.cameraRef, items],
+    [setArtworkHover, updateArtworkHover],
   );
 
   const handlePointerLeave = useCallback(() => {
-    setIsHoveringArtwork(false);
-  }, []);
+    pointerRef.current = null;
+    setArtworkHover(false);
+  }, [setArtworkHover]);
+
+  useEffect(() => {
+    let frameId;
+
+    function trackArtworkHover() {
+      updateArtworkHover();
+      frameId = requestAnimationFrame(trackArtworkHover);
+    }
+
+    frameId = requestAnimationFrame(trackArtworkHover);
+    return () => cancelAnimationFrame(frameId);
+  }, [updateArtworkHover]);
 
   useEffect(() => {
     if (!selectedItem) return undefined;
