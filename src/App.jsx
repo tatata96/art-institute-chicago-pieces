@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
   CategoryNav,
   useUniverseCore,
@@ -14,11 +14,59 @@ import {getGroups, getGroupValue} from "./utils";
 import "./App.css";
 
 const renderItem = createImageRenderer("image_url");
+const FOCAL_LENGTH = 800;
+const ITEM_WORLD_SIZE = 50;
+
+function getHoveredArtwork(items, animRef, camera, width, height, x, y) {
+  const renderedItems = [];
+
+  for (const item of items) {
+    const animated = animRef.current[item.id];
+    const worldItem = animated
+      ? {
+          ...item,
+          x: animated.currentX,
+          y: animated.currentY,
+          z: animated.currentZ,
+        }
+      : item;
+    const depth = worldItem.z - camera.z;
+
+    if (depth <= 0) continue;
+
+    const scale = FOCAL_LENGTH / depth;
+    renderedItems.push({
+      ...worldItem,
+      screenX: (worldItem.x - camera.x) * scale + width / 2,
+      screenY: (worldItem.y - camera.y) * scale + height / 2,
+      screenSize: ITEM_WORLD_SIZE * scale,
+    });
+  }
+
+  renderedItems.sort((a, b) => b.z - camera.z - (a.z - camera.z));
+
+  for (let i = renderedItems.length - 1; i >= 0; i -= 1) {
+    const item = renderedItems[i];
+    const halfSize = item.screenSize / 2;
+
+    if (
+      x >= item.screenX - halfSize &&
+      x <= item.screenX + halfSize &&
+      y >= item.screenY - halfSize &&
+      y <= item.screenY + halfSize
+    ) {
+      return item;
+    }
+  }
+
+  return null;
+}
 
 export default function App() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeGroup, setActiveGroup] = useState(null);
   const [artworks, setArtworks] = useState([]);
+  const [isHoveringArtwork, setIsHoveringArtwork] = useState(false);
   const [loadState, setLoadState] = useState({status: "loading", message: ""});
 
   useEffect(() => {
@@ -76,6 +124,33 @@ export default function App() {
     setActiveGroup(field);
   }
 
+  const handlePointerMove = useCallback(
+    (event) => {
+      if (event.target.tagName !== "CANVAS") {
+        setIsHoveringArtwork(false);
+        return;
+      }
+
+      const rect = event.target.getBoundingClientRect();
+      const hoveredArtwork = getHoveredArtwork(
+        items,
+        core.animRef,
+        core.cameraRef.current,
+        rect.width,
+        rect.height,
+        event.clientX - rect.left,
+        event.clientY - rect.top,
+      );
+
+      setIsHoveringArtwork(Boolean(hoveredArtwork));
+    },
+    [core.animRef, core.cameraRef, items],
+  );
+
+  const handlePointerLeave = useCallback(() => {
+    setIsHoveringArtwork(false);
+  }, []);
+
   useEffect(() => {
     if (!selectedItem) return undefined;
 
@@ -90,7 +165,11 @@ export default function App() {
   }, [selectedItem]);
 
   return (
-    <div className="app">
+    <div
+      className={`app${isHoveringArtwork ? " app--image-hover" : ""}`}
+      onPointerLeave={handlePointerLeave}
+      onPointerMove={handlePointerMove}
+    >
       <TopBar activeGroup={activeGroup} onGroupChange={handleGroupChange} />
 
       <UniverseCanvas

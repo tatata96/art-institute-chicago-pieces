@@ -4,6 +4,10 @@
   color: #191919;
 }
 
+.app--image-hover canvas {
+  cursor: pointer;
+}
+
 .top-bar {
   position: fixed;
   top: 18px;
